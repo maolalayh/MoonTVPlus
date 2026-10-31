@@ -3,6 +3,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 main = "./cloudflare-worker.ts"
 minify = true
+# 保留 dashboard 上已设置的变量（UPSTASH_URL/UPSTASH_TOKEN/USERNAME/PASSWORD 等），
+# 避免 wrangler deploy 用 [vars] 覆盖掉，导致凭据落到本地磁盘。
+keep_vars = true
 
 # 静态资源配置
 # Cloudflare Workers Assets 用于服务静态文件
@@ -10,11 +13,7 @@ minify = true
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-# D1 数据库绑定
-[[d1_databases]]
-binding = "DB"
-database_name = "moontvplus"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+# 本实例存储后端为 Upstash，账号下无 D1 数据库，故移除 [[d1_databases]] 段。
 
 # 观影室的 Durable Object。
 # 单个 hub DO 装下所有房间：客户端是先建连、后 emit room:create/join，
@@ -38,5 +37,7 @@ crons = ["0 1 * * *"]
 [vars]
 NODE_ENV = "production"
 BUILD_TARGET = "cloudflare"
+# 与线上现网一致（原 Worker 上为 plain_text 变量）
+NEXT_PUBLIC_STORAGE_TYPE = "upstash"
 # cron 路由等任务真正结束再返回（CF 上不需要 Vercel 那套"先返回 202 再后台跑"）
 CRON_WAIT_FOR_COMPLETION = "true"
